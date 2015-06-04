@@ -19,6 +19,7 @@ import hudson.plugins.git.extensions.GitClientType;
 import hudson.plugins.git.extensions.GitSCMExtension;
 import hudson.plugins.git.extensions.impl.EnforceGitClient;
 import hudson.plugins.git.extensions.impl.DisableRemotePoll;
+import hudson.plugins.git.extensions.impl.RequireRemotePoll;
 import hudson.plugins.git.extensions.impl.PathRestriction;
 import hudson.plugins.git.extensions.impl.RelativeTargetDirectory;
 import hudson.plugins.git.extensions.impl.SparseCheckoutPath;
@@ -174,6 +175,33 @@ public abstract class AbstractGitTestCase extends HudsonTestCase {
                 null, null,
                 Collections.<GitSCMExtension>emptyList());
         scm.getExtensions().add(new DisableRemotePoll()); // don't work on a file:// repository
+        if (relativeTargetDir!=null)
+            scm.getExtensions().add(new RelativeTargetDirectory(relativeTargetDir));
+        if (excludedUsers!=null)
+            scm.getExtensions().add(new UserExclusion(excludedUsers));
+        if (excludedRegions!=null || includedRegions!=null)
+            scm.getExtensions().add(new PathRestriction(includedRegions,excludedRegions));
+
+        scm.getExtensions().add(new SparseCheckoutPaths(sparseCheckoutPaths));
+
+        project.setScm(scm);
+        project.getBuildersList().add(new CaptureEnvironmentBuilder());
+        return project;
+    }
+
+    // based on above - just changing the extensions section
+    protected FreeStyleProject setupProject(List<BranchSpec> branches, boolean authorOrCommitter,
+                String relativeTargetDir, String excludedRegions,
+                String excludedUsers, String localBranch, boolean fastRemotePoll,
+                String includedRegions, List<SparseCheckoutPath> sparseCheckoutPaths) throws Exception {
+        FreeStyleProject project = createFreeStyleProject();
+        GitSCM scm = new GitSCM(
+                createRemoteRepositories(),
+                branches,
+                false, Collections.<SubmoduleConfig>emptyList(),
+                null, null,
+                Collections.<GitSCMExtension>emptyList());
+        scm.getExtensions().add(new RequireRemotePoll()); // don't work on a file:// repository
         if (relativeTargetDir!=null)
             scm.getExtensions().add(new RelativeTargetDirectory(relativeTargetDir));
         if (excludedUsers!=null)
