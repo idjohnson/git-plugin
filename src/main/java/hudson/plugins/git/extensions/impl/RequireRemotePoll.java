@@ -3,6 +3,7 @@ package hudson.plugins.git.extensions.impl;
 import hudson.Extension;
 import hudson.plugins.git.extensions.GitSCMExtension;
 import hudson.plugins.git.extensions.GitSCMExtensionDescriptor;
+
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
